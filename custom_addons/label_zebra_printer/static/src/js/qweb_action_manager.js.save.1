@@ -1,0 +1,433 @@
+odoo.define('label_zebra_printer.qweb_action_manager', function(require) {
+    'use strict';
+
+    var ajax = require('web.ajax');
+    var ActionManager = require('web.ActionManager');
+    var core = require('web.core');
+    var framework = require('web.framework');
+    var session = require('web.session');
+    var Dialog = require('web.Dialog');
+    var QWeb = core.qweb;
+    var rpc = require('web.rpc');
+
+    var _t = core._t;
+    var _lt = core._lt;
+
+    var controller_url = null;
+    var wkhtmltopdf_state;
+    var action_model = null;
+    var company_id = session.company_id;
+    var print_copies = 1;
+    var printer_type = 'zpl'
+
+    var wkhtmltopdf_state;
+
+// Messages that will be shown to the user (if needed).
+var WKHTMLTOPDF_MESSAGES = {
+    'install': _lt('Unable to find Wkhtmltopdf on this \nsystem. The report will be shown in html.<br><br><a href="http://wkhtmltopdf.org/" target="_blank">\nwkhtmltopdf.org</a>'),
+    'workers': _lt('You need to start OpenERP with at least two \nworkers to print a pdf version of the reports.'),
+    'upgrade': _lt('You should upgrade your version of\nWkhtmltopdf to at least 0.12.0 in order to get a correct display of headers and footers as well as\nsupport for table-breaking between pages.<br><br><a href="http://wkhtmltopdf.org/" \ntarget="_blank">wkhtmltopdf.org</a>'),
+    'broken': _lt('Your installation of Wkhtmltopdf seems to be broken. The report will be shown in html.<br><br><a href="http://wkhtmltopdf.org/" target="_blank">wkhtmltopdf.org</a>')
+};
+
+/**
+ * This helper will generate an object containing the report's url (as value)
+ * for every qweb-type we support (as key). It's convenient because we may want
+ * to use another report's type at some point (for example, when `qweb-pdf` is
+ * not available).
+ */
+
+var _makeReportUrls = function (action) {
+    var reportUrls = {
+        html: '/report/html/' + action.report_name,
+        pdf: '/report/pdf/' + action.report_name,
+        text: '/report/text/' + action.report_name,
+    };
+    // We may have to build a query string with `action.data`. It's the place
+    // were report's using a wizard to customize the output traditionally put
+    // their options.
+    if (_.isUndefined(action.data) || _.isNull(action.data) ||
+        (_.isObject(action.data) && _.isEmpty(action.data))) {
+        if (action.context.active_ids) {
+            var activeIDsPath = '/' + action.context.active_ids.join(',');
+            reportUrls = _.mapObject(reportUrls, function (value) {
+                return value += activeIDsPath;
+            });
+        }
+    } else {
+        var serializedOptionsPath = '?options=' + encodeURIComponent(JSON.stringify(action.data));
+        serializedOptionsPath += '&context=' + encodeURIComponent(JSON.stringify(action.context));
+        reportUrls = _.mapObject(reportUrls, function (value) {
+            return value += serializedOptionsPath;
+        });
+    }
+    return reportUrls;
+};
+
+ActionManager.include({
+    _executeReportAction: function (action, options) {
+        var self = this;
+        company_id = session.company_id
+        action = _.clone(action);
+        var report_urls = _makeReportUrls(action);
+        var txt_t;
+        var person = null;
+        var is_zebra_print = false
+        $("#myModalpopup").remove();
+        var model_popup = 
+            '<div class="modal fade" id="myModalpopup" role="dialog" style="display: none;" aria-hidden="true">'+
+            '<div class="modal-dialog modal-sm">'+
+                '<div class="modal-content">'+
+                    '<div class="modal-header">'+
+                      '<h4 class="modal-title">No Of Copies</h4>'+
+                      '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+                    '</div>'+
+                    '<div class="modal-body">'+
+                      '<input type="number" name="copies_count" value="1">'+
+                    '</div>'+
+                    '<div class="modal-footer">'+
+                      '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>'+
+                      '<button type="button" class="btn btn-default pull-right copies_text_in" data-dismiss="modal">OK</button>'+
+                    '</div>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'+
+            '</div>'
+            $('body').append(model_popup);
+        if (action.xml_id !== undefined){
+            if (action.xml_id === 'stock.label_product_template' || action.xml_id === 'stock.label_product_product' || action.xml_id === 'label_zebra_printer.report_shipment_label' || action.xml_id === 'stock.action_report_location_barcode') {
+                is_zebra_print = true;
+            } 
+        }
+        if (is_zebra_print == true) {
+            $("#myModalpopup").modal();
+            $('.copies_text_in').click(function() {
+                    var input_val = $("input[name='copies_count']").val()
+                    person = input_val;
+                    if (person == null || person == "") {
+                        txt_t = "Cancelled copies";
+                        return false;
+                    }
+                    else {
+                            if(parseInt(person)){
+                                print_copies = person;
+                                controller_url = report_urls.pdf;
+                                action_model = action.model;
+                                return startConnection();
+                            }
+                            else{
+                                return false;
+                            }
+                        }
+                });
+            return $.Deferred().reject();
+        }
+        else{
+            if (action.report_type === 'qweb-html') {
+                return this._executeReportClientAction(action, options);
+            } else if (action.report_type === 'qweb-pdf') {
+                // check the state of wkhtmltopdf before proceeding
+                return this.call('report', 'checkWkhtmltopdf').then(function (state) {
+                    // display a notification according to wkhtmltopdf's state
+                    if (state in WKHTMLTOPDF_MESSAGES) {
+                        self.do_notify(_t('Report'), WKHTMLTOPDF_MESSAGES[state], true);
+                    }
+
+                    if (state === 'upgrade' || state === 'ok') {
+                        // trigger the download of the PDF report
+                        return self._triggerDownload(action, options, 'pdf');
+                    } else {
+                        // open the report in the client action if generating the PDF is not possible
+                        return self._executeReportClientAction(action, options);
+                    }
+                });
+            } else if (action.report_type === 'qweb-text') {
+                return self._triggerDownload(action, options, 'text');
+            } else {
+                return $.Deferred().reject();
+            }
+        }
+    },
+});
+
+    var qzVersion = 0;
+
+
+    function findVersion() {
+        qz.api.getVersion().then(function(data) {
+            qzVersion = data;
+        });
+    }
+
+    function startConnection(config) {
+        qz.security.setCertificatePromise(function(resolve, reject) {
+            $.ajax("/label_zebra_printer/static/src/lib/digital-certificate.txt").then(resolve, reject);
+        });
+
+        // In This Method You can sign signature using privateKey
+        // qz.security.setSignaturePromise(function(toSign) {
+        //     return function(resolve, reject) {
+        //         try {
+        //             var pk = new RSAKey();
+        //             pk.readPrivateKeyFromPEMString(strip(privateKey));
+        //             var hex = pk.signString(toSign, 'sha1');
+        //             resolve(stob64(hextorstr(hex)));
+        //         } catch (err) {
+        //             reject(err);
+        //         }
+        //     };
+        // });
+
+        function strip(key) {
+            if (key.indexOf('-----') !== -1) {
+                return key.split('-----')[2].replace(/\r?\n|\r/g, '');
+            }
+        }
+
+        if (!qz.websocket.isActive()) {
+            qz.websocket.connect(config).then(function() {
+                findVersion();
+                findPrinters();
+            });
+        } else {
+        }
+    }
+
+    function findPrinters() {
+            if (action_model == 'stock.picking')
+            {
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    printer_type = company[0].printer_type
+                    qz.printers.find(company[0].shipping_printer).then(function(data) {
+                         setPrinter(data);
+                     }).catch(function(err) {
+                    });
+                });
+            }
+            else if (action_model == 'stock.location')
+            {
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    printer_type = company[0].printer_type
+                    qz.printers.find(company[0].location_printer).then(function(data) {
+                         setPrinter(data);
+                     }).catch(function(err) {
+                    });
+                });
+            }
+            else
+            {
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    printer_type = company[0].printer_type
+                    qz.printers.find(company[0].product_printer).then(function(data) {
+                         setPrinter(data);
+                     }).catch(function(err) {
+                    });
+                });
+            }
+       }
+
+    function setPrinter(printer) {
+        var cf = getUpdatedConfig();
+        cf.setPrinter(printer);
+        if (typeof printer === 'object' && printer.name == undefined) {
+            var shown;
+            if (printer.file != undefined) {
+                shown = "<em>FILE:</em> " + printer.file;
+            }
+            if (printer.host != undefined) {
+                shown = "<em>HOST:</em> " + printer.host + ":" + printer.port;
+            }
+        } else {
+            if (printer.name != undefined) {
+                printer = printer.name;
+            }
+
+            if (printer == undefined) {
+                printer = 'NONE';
+            }
+            if (action_model == 'stock.picking') {
+                print_picking_label();
+            }
+            else if (action_model == 'stock.location'){
+                print_location_label();
+            }
+            else {
+                print_product_label();
+            }
+        }
+    }
+    /// QZ Config ///
+    var cfg = null;
+
+    function getUpdatedConfig() {
+        if (cfg == null) {
+            cfg = qz.configs.create(null);
+        }
+
+        cfg.reconfigure({
+            copies: print_copies,
+        });
+        return cfg
+    }
+
+    function print_product_label() {
+        ajax.jsonRpc("/zebra" + controller_url, 'call', {})
+            .then(function(res_data) {
+                var config = getUpdatedConfig();
+                var width = 1.25;
+                var height = 1;
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    height = company[0].product_height
+                    width = company[0].product_width
+                });
+                config.reconfigure({
+                    size: {'width': width, 'height': height},
+                });
+
+                res_data.data.forEach(function(product) {
+                    if (printer_type == 'zpl'){
+                        var printData =
+                            [
+                                  '^XA',
+                                '^CF0,40',
+                                '^FO15,25^A0N,33,18^FD'+product.name+'^FS',
+                                '^BY2,20,50',
+                                '^FO20,75^BC^FD'+product.barcode+'^FS',
+                                '^XZ',
+                              '^XA',
+                                '^CF0,40',
+                                '^FO15,25^A0N,33,18^FD'+product.name+'^FS',
+                                '^BY2,20,50',
+                                '^FO20,75^BC^FD'+product.barcode+'^FS',
+                                '^XZ'                            ];
+                    }
+                    else{
+                        var printData =
+                            [
+                                '\nN\n',
+                                'q609\n',
+                                'Q203,26\n',
+                                'D7\n',
+                                'A190,10,0,3,1,1,N,"'+product.name+'"\n',
+                                'B190,60,0,1,1,2,60,B,"'+product.barcode+'"\n',
+                                '\nP1,1\n'
+                            ];
+                    }
+                    qz.print(config, printData).catch(function(e) {});
+                    });
+
+            }).then(function() {
+                location.reload();
+            });
+    }
+
+    function print_picking_label() {
+        ajax.jsonRpc("/zebra" + controller_url, 'call', {})
+            .then(function(res_data) {
+                var config = getUpdatedConfig();
+                var width = 1.25;
+                var height = 1;
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    height = company[0].shipping_height
+                    width = company[0].shipping_width
+                });
+                config.reconfigure({
+                    size: {'width': width, 'height': height},
+                });
+                res_data.data.forEach(function(picking) {
+                    if (printer_type == 'zpl'){
+                        var printData =
+                            [
+                                '^XA',
+                                '^CF0,40',
+                                '^BY2,20,50',
+                                '^FO20,25^BC^FD'+picking.label+'^FS',
+                                '^XZ',
+                            ];
+                    }
+                    else{
+                        var printData =
+                            [
+                                '\nN\n',
+                                'q609\n',
+                                'Q203,26\n',
+                                'B190,10,0,1,1,2,60,B,"'+picking.label+'"\n',
+                                '\nP1,1\n'
+                            ];
+                    }
+                    qz.print(config, printData).catch(function(e) {});
+                });
+
+            }).then(function() {
+                location.reload();
+            });
+    }
+    function print_location_label() {
+        ajax.jsonRpc("/zebra" + controller_url, 'call', {})
+            .then(function(res_data) {
+                var config = getUpdatedConfig();
+                var width = 1.25;
+                var height = 1;
+                rpc.query({
+                    model: 'res.company',
+                    method: 'read',
+                    args: [[company_id], []],
+                }).then(function(company) {
+                    height = company[0].location_height
+                    width = company[0].location_width
+                });
+                config.reconfigure({
+                    size: {'width': width, 'height': height},
+                });
+                res_data.data.forEach(function(location) {
+                    if (printer_type == 'zpl'){
+                        var printData =
+                            [
+                                '^XA',
+                                '^CF0,130',
+                                '^FO100,120^FD'+location.name+'^FS',
+                                '^BY2,20,120',
+                                '^FO250,250^BC^FD'+location.barcode+'^FS',
+                                '^XZ',
+                            ];
+                    }
+                    else{
+                        var printData =
+                            [
+                                '\nN\n',
+                                'q609\n',
+                                'Q203,26\n',
+                                'D7\n',
+                                'A190,10,0,3,1,1,N,"'+location.name+'"\n',
+                                'B190,60,0,1,1,2,60,B,"'+location.barcode+'"\n',
+                                '\nP1,1\n'
+                            ];
+                    }
+                    qz.print(config, printData).catch(function(e) {});
+                    });
+
+            }).then(function() {
+                location.reload();
+            });
+    }
+});

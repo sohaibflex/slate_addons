@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="view_so_split_confirm_wizard" model="ir.ui.view">
+            <field name="name">Split Order Confirmation</field>
+            <field name="model">split.so.order.confirm</field>
+            <field name="arch" type="xml">
+              <form string="Split Order Confirmation">
+                  <group string="Are you sure want to split the sale order?"/>
+                  <footer>
+                      <button name="confirm" string="Confirm" type="object" class="oe_highlight"/>
+                      or
+                      <button string="Cancel" class="oe_link" special="cancel" />
+                  </footer>
+            </form>
+            </field>
+        </record>
+        
+        <act_window name="Split Sale Order"
+	        res_model="split.so.order.confirm"
+            binding_model="sale.order.line"
+            view_mode="form"
+            target="new"	
+            id="view_so_split_confirm"/>
+
+</odoo>

@@ -1,0 +1,15 @@
+{
+    'name': 'Flex Edit Product Configurator',
+    'version': '1.0',
+    'summary': 'Make Checkbox for Product Configurator',
+    'description': 'Make Checkbox for Product Configurator',
+    'category': '',
+    'author': 'Sohaib Alamleh||Flex-ops',
+    'website': 'https://www.flex-ops.com',
+    'license': '',
+    'depends': ['sale_stock', 'product', 'sale_product_configurator'],
+    'data': [],
+    'demo': [''],
+    'installable': True,
+    'auto_install': False,
+}

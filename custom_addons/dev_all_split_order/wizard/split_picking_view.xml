@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+    <record id="view_picking_split_confirm_wizard" model="ir.ui.view">
+        <field name="name">Split Transfer Confirmation</field>
+        <field name="model">split.transfer.confirm</field>
+        <field name="arch" type="xml">
+          <form string="Split Order Confirmation">
+              <group string="Are you sure want to split the Transfer order?"/>
+              <footer>
+                  <button name="confirm" string="Confirm" type="object" class="oe_highlight"/>
+                  or
+                  <button string="Cancel" class="oe_link" special="cancel" />
+              </footer>
+        </form>
+        </field>
+    </record>
+    
+    <act_window name="Split Transfer Order"
+        res_model="split.transfer.confirm"
+        binding_model="stock.move"
+        view_mode="form"
+        target="new"	
+        id="view_picking_split_transfer_confirm"/>
+</odoo>

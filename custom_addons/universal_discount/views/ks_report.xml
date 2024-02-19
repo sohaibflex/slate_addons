@@ -1,0 +1,96 @@
+<odoo>
+    <template id="ks_global_discount_sale_report" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[@name='total']/div/table/t/tr" position="replace">
+            <t t-if="doc.ks_amount_discount>0">
+                <tr>
+                    <td>
+                        <span>Universal Discount</span>
+                        <t t-if="doc.ks_global_discount_type == 'percent'">
+                            (<span t-field="doc.ks_global_discount_rate"/>%)
+                        </t>
+                    </td>
+                    <td class="text-right">
+                        <span t-field="doc.ks_amount_discount"
+                              t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'/>
+                    </td>
+                </tr>
+                <tr class="border-black o_subtotal" style="">
+                    <td name="td_amount_untaxed_after_discount_label">
+                        <strong>Subtotal After Discount</strong>
+                    </td>
+                    <td name="td_amount_untaxed_after_discount" class="text-right">
+                        <span t-field="doc.ks_untaxed_amount_after_discount"/>
+                    </td>
+                </tr>
+            </t>
+
+            <tr style="">
+                <t t-if="amount_by_group[5] == 1 and doc.amount_untaxed == amount_by_group[2]">
+                    <td name="td_amount_by_group_label_3">
+                        <span t-esc="amount_by_group[0]"/>
+                        <span>&amp;nbsp;<span>on</span>&amp;nbsp;
+                            <t t-esc="doc.ks_untaxed_amount_after_discount"
+                               t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                        </span>
+                    </td>
+                    <td name="td_amount_by_group_3" class="text-right o_price_total">
+                        <span t-esc="doc.amount_tax"
+                              t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                    </td>
+                </t>
+                <t t-else="">
+                    <td name="td_amount_by_group_label">
+                        <span t-esc="amount_by_group[0]"/>
+                    </td>
+                    <td name="td_amount_by_group" class="text-right o_price_total">
+                        <span t-esc="doc.amount_tax"
+                              t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                    </td>
+                </t>
+            </tr>
+        </xpath>
+    </template>
+
+
+    <template id="ks_global_discount_invoice_report" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@id='total']/div/table/t" position="after">
+            <t t-if="o.ks_amount_discount>0">
+
+                <tr>
+                    <td>
+                        <span>Universal Discount</span>
+                        <t t-if="o.ks_global_discount_type == 'percent'">
+                            (<span t-field="o.ks_global_discount_rate"/>%)
+                        </t>
+                    </td>
+                    <td class="text-right">
+                        <span t-field="o.ks_amount_discount"
+                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+
+
+    <template id="ks_global_discount_purchase_report" inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="//div[@class='row justify-content-end']/div/table[@class='table table-sm']/tr[2]" position="after">
+            <t t-if="o.ks_amount_discount>0">
+
+                <tr>
+                    <td>
+                        <span>Universal Discount</span>
+                        <t t-if="o.ks_global_discount_type == 'percent'">
+                            (<span t-field="o.ks_global_discount_rate"/>%)
+                        </t>
+                    </td>
+                    <td class="text-right">
+                        <span t-field="o.ks_amount_discount"
+                              t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

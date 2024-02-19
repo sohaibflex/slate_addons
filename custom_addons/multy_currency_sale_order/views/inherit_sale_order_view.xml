@@ -1,0 +1,31 @@
+<odoo>
+    <data>
+        <record id="sale_order_form_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="priority">12</field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='amount_total']" position="after">
+                    <field name="show_amount_currency"/>
+                    <field name="amount_currency"/>
+                </xpath>
+            </field>
+        </record>
+        <template id="multy_currency_report" inherit_id="sale.report_saleorder_document">
+            <xpath expr="//tr[@class='border-black o_total']" position="after">
+                <t t-if="doc.show_amount_currency">
+                    <tr class="border-black o_total">
+                        <td name="multy_currency">
+                            <strong>Total</strong>
+                        </td>
+                        <td name="multy_currency_total" class="text-right">
+                            <span t-field="doc.amount_currency"/>
+                        </td>
+                    </tr>
+                </t>
+            </xpath>
+        </template>
+
+    </data>
+</odoo>

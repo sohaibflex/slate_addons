@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="rental_order_primary_form_view_inherit1" model="ir.ui.view">
+            <field name="name">rental.order.primary.form.view.inherit1</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_renting.rental_order_primary_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@class='oe_button_box']" position="inside">
+                    <field name="picking_ids" invisible="1"/>
+                    <button type="object"
+                            name="action_show_receipt"
+                            class="oe_stat_button"
+                            icon="fa-truck"
+                            attrs="{'invisible': [('receipt_count', '=', 0)]}">
+                        <field name="receipt_count" widget="statinfo" string="Receipt"/>
+                    </button>
+                </xpath>
+                <xpath expr="//button[@name='open_pickup']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//button[@name='open_return']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_cancel']" position="after">
+                    <button name="open_return" type="object" class="btn-primary" string="RETURN"
+                            attrs="{'invisible':['|',
+              ('state', 'not in', ['sale', 'done']),
+              '|',
+                ('has_returnable_lines','=',False),
+                '&amp;',
+                ('has_returnable_lines','=',True),
+                ('has_pickable_lines','=',True)]
+            }"/>
+                </xpath>
+
+                <xpath expr="//button[@name='action_view_delivery']" position="replace">
+                    <field name="picking_ids" invisible="1"/>
+                    <button type="object"
+                            name="action_show_delivery"
+                            class="oe_stat_button"
+                            icon="fa-truck"
+                            attrs="{'invisible': [('delivery_count_new', '=', 0)]}" groups="base.group_user">
+                        <field name="delivery_count_new" widget="statinfo" string="Delivery"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

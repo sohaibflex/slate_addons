@@ -1,0 +1,18 @@
+<odoo>
+    <template id="inherit_invoice_report" inherit_id="account.report_invoice_document">
+        <xpath expr="//p[@name='comment']" position="replace">
+            <p t-if="o.bank_details" name="bank_details">
+                <span t-field="o.bank_details"/>
+            </p>
+        </xpath>
+        <xpath expr="//div[@class='row mt-4 mb-4']" position="after">
+         <div class="row mt32 mb32" id="informations">
+                <div t-if="o.project_name" class="col-auto col-3 mw-100 mb-2">
+                    <strong>Project Name:</strong>
+                    <p class="m-0" t-field="o.project_name"/>
+                </div>
+         </div>
+        </xpath>
+
+    </template>
+</odoo>

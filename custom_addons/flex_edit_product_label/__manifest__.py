@@ -1,0 +1,15 @@
+{
+    'name': 'Flex Edit Product Label',
+    'version': '1.0',
+    'summary': '',
+    'description': '',
+    'category': '',
+    'author': '',
+    'website': '',
+    'license': '',
+    'depends': ['product','stock'],
+    'data': ['reports/report.xml'],
+    'demo': [''],
+    'installable': True,
+    'auto_install': False,
+}

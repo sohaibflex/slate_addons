@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View to Modify it -->
+    <record id="stock_move_line_product_selector_flex" model="ir.ui.view">
+        <field name="name">stock.move.line.product.selector.flex</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@class='row'][2]" position="after">
+                <div class="row">
+                    <div class="col-12 col-md-6 my-2 d-flex align-items-baseline">
+                        <field name="product_component_id" placeholder="Components" widget="many2many_tags"/>
+                        <button name="action_compute_component" string="Add Components" type="object"
+                                class="oe_stat_button"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

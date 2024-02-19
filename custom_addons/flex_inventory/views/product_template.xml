@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record id="view_product_product_template_form_inherited" model="ir.ui.view">
+            <field name="name">view.product.product.template.form.inherited</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="before">
+                    <field name="date"/>
+                    <field name="account_cost"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="product_product_normal_form_view_inherited" model="ir.ui.view">
+            <field name="name">product.product.normal.form.view.inherited</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="before">
+                    <field name="date"/>
+                    <field name="account_cost"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_product_variant_easy_edit_view_inherited" model="ir.ui.view">
+            <field name="name">product.product.variant.easy.edit.view.inherited</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_variant_easy_edit_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='pricing']" position="after">
+                    <group>
+                        <field name="date"/>
+                        <field name="account_cost"/>
+                        <field name="qty_variant"/>
+
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+
+        <record id="product_product_product_tree_view_inherited" model="ir.ui.view">
+            <field name="name">product.product.product.tree.view.inherited</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_product_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='qty_available']" position="before">
+                    <field name="account_cost"/>
+                </xpath>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

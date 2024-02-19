@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_split_so_order_confirm,split.so.order.confirm,model_split_so_order_confirm,,1,1,1,1
+access_split_po_order_confirm,split.po.order.confirm,model_split_po_order_confirm,,1,1,1,1
+access_split_transfer_confirm,split.transfer.confirm,model_split_transfer_confirm,,1,1,1,1
+
+
+
+
+
+
+
+
+

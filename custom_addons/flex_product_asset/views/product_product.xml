@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_product_product_assets" model="ir.actions.act_window">
+            <field name="name">Assets</field>
+            <field name="res_model">account.asset</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('asset_type', '=', 'purchase'), ('state', '!=', 'model'), ('parent_id', '=', False), ('product_id', '=', active_id)]</field>
+            <field name="context">{'asset_type': 'purchase', 'default_asset_type': 'purchase', 'default_product_id': active_id, 'default_product_qty': 1.0}</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('account_asset.view_account_asset_purchase_tree')}),
+            (0, 0, {'view_mode': 'kanban'}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('account_asset.view_account_asset_form')})]"/>
+        </record>
+
+        <record id="product_normal_form_view_inherit" model="ir.ui.view">
+            <field name="name">product_normal_form_view_inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <div name="button_box" position="inside">
+                    <button name="%(flex_product_asset.action_product_product_assets)d" type="action" icon="fa-sitemap"
+                            class="oe_stat_button" groups="account.group_account_user">
+                        <!--                        attrs="{'invisible': [('asset_count', '&lt;=', 1)]}"-->
+                        <field string="Assets" name="asset_count" widget="statinfo"/>
+                    </button>
+                </div>
+                <xpath expr="//form" position="inside">
+                    <field name="asset_ids" widget="many2many_tags" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

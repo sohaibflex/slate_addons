@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="flex_report_simple_barcode" inherit_id="product.report_simple_barcode">
+        <xpath expr="//div/table/tr[1]/th" position="replace">
+            <th class="table-active text-left" style="height: 4rem;">
+                <strong t-field="product.display_name" style="font-size: 12px;"/>
+            </th>
+        </xpath>
+    </template>
+    <template id="flex_report_simple_label" inherit_id="product.report_simple_label">
+        <xpath expr="//div/table/tr[1]/th" position="replace">
+            <th class="table-active text-left" style="height: 4rem;">
+                <strong t-field="product.display_name" style="font-size: 12px;"/>
+            </th>
+        </xpath>
+    </template>
+
+    <template id="flex_label_product_template_view" inherit_id="stock.label_product_template_view">
+       <xpath expr="//t[@t-esc='product.display_name']" position="replace">
+            <t t-esc="product.display_name" style="font-size: 12px;"/>
+        </xpath>
+    </template>
+    <template id="flex_label_product_product_view" inherit_id="stock.label_barcode_product_product_view">
+       <xpath expr="//t[@t-esc='product.display_name']" position="replace">
+            <t t-esc="product.display_name" style="font-size: 12px;"/>
+        </xpath>
+    </template>
+
+
+</odoo>

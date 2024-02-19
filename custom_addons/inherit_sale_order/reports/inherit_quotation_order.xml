@@ -1,0 +1,9 @@
+<odoo>
+   <data>
+<!--        <template id="inherit_report_saleorder_document" inherit_id="sale.report_saleorder_document">-->
+<!--            <xpath expr="//th[@name='th_quantity']" position="replace">-->
+<!--                <th name="th_quantity" class="text-right">QTY</th>-->
+<!--            </xpath>-->
+<!--        </template>-->
+    </data>
+</odoo>

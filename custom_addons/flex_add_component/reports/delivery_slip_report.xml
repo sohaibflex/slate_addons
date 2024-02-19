@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_delivery_slip_inherit_flex" inherit_id="stock.report_delivery_document">
+        <xpath expr="//table[@name='stock_move_table']" position="after">
+            <table class="table table-sm" name="stock_move_table_component">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Product Components</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.move_ids_without_package" t-as="line">
+                        <td>
+                            <span t-field="line.product_id"/>
+                        </td>
+                        <td>
+                            <span t-field="line.product_component_id" widget="many2many_tags"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle
+ -->
+<odoo>
+	<record id="active_stock_transfer_line" model="ir.actions.act_window">
+        <field name="name">stock move Line</field>
+        <field name="res_model">stock.move</field>
+        <field name="view_mode">tree,form,graph</field>
+        <field name="view_id" ref="stock.view_move_tree"/>
+        <field name="context">{'search_default_picking_id': active_id}</field> 
+    </record>
+        
+    <record id="transfers_split_button_form" model="ir.ui.view">
+        <field name="name">transfers.split.button.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml"> 
+                <xpath expr="//div[@name='button_box']/button[@name='action_picking_move_tree']" position="after">
+					<button class="oe_stat_button oe_right" type="action" id="sale_split_button" icon="fa-scissors" name="%(dev_all_split_order.active_stock_transfer_line)d" attrs="{'invisible': [('state', '!=', 'draft')]}">
+                        <div class="o_form_field o_stat_info">
+                            <span class="o_stat_text">Split Transfers</span>
+                        </div>
+                    </button>					
+                </xpath>
+		</field>
+    </record>
+
+    <record id="transfers_split_button_search_inher" model="ir.ui.view">
+        <field name="name">stock.move.serach.inherit</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_move_search"/>
+        <field name="arch" type="xml"> 
+			<xpath expr="//field[@name='product_id']" position="after">
+				<field name="picking_id" />
+			</xpath>
+
+		</field>
+    </record>
+</odoo>

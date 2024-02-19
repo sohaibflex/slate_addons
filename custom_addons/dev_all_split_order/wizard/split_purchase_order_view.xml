@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
+
+For Module Support : devintelle@gmail.com  or Skype : devintelle 
+ -->
+<odoo>
+
+        <record id="view_po_split_confirm_wizard" model="ir.ui.view">
+            <field name="name">Split Order Confirmation</field>
+            <field name="model">split.po.order.confirm</field>
+            <field name="arch" type="xml">
+              <form string="Split Order Confirmation">
+                  <group string="Are you sure want to split the Purchase order?"/>
+                  <footer>
+                      <button name="confirm_purchase" string="Confirm" type="object" class="oe_highlight"/>
+                      or
+                      <button string="Cancel" class="oe_link" special="cancel" />
+                  </footer>
+            </form>
+            </field>
+        </record>
+        
+        <act_window name="Split Purchase Order"
+	        res_model="split.po.order.confirm"
+            binding_model="purchase.order.line"
+            view_mode="form"
+            target="new"	
+            id="view_po_split_confirm"/>
+
+</odoo>

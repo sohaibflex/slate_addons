@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_product_template_form_inherit" model="ir.ui.view">
+            <field name="name">product.template.product.form</field>
+            <field name="model">product.template</field>
+            <field name="priority" eval="8"/>
+            <!--            <field name="inherit_id" ref="product.product_template_only_form_view"/>-->
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Component" name="bom">
+                        <group>
+<!--                            <field name="excel_file"/>-->
+                        </group>
+                        <group>
+                            <button name="import_from_excel" class="btn btn-primary" type="object"
+                                    string="Import From File"/>
+                        </group>
+                        <group>
+                            <field name="bom_ids" widget="one2many" nolabel="1">
+                                <tree name="bom_tree" string="BOM" editable="bottom">
+                                    <field name="product_template_id" invisible="1"/>
+                                    <field name="product_id" invisible="1"/>
+                                    <field name="component_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="quantity"/>
+                                    <field name="cost"/>
+                                    <field name="note"/>
+                                    <field name="sub_total"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="sale_total">
+                            <field name="amount_untaxed" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </page>
+
+                </notebook>
+            </field>
+        </record>
+
+        <record id="component_tree_view" model="ir.ui.view">
+            <field name="name">component.tree.view</field>
+            <field name="model">component</field>
+            <field name="arch" type="xml">
+                <tree string="Component" editable="bottom">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="component_action" model="ir.actions.act_window">
+            <field name="name">Component</field>
+            <field name="res_model">component</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="component_tree_view"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new Component
+                </p>
+            </field>
+        </record>
+
+        <menuitem
+                id="menu_component"
+                name="Component"
+                parent="stock.menu_stock_config_settings"
+                action="component_action"
+        />
+
+        <record id="product_component_tree_view" model="ir.ui.view">
+            <field name="name">product.component.tree.view</field>
+            <field name="model">bom</field>
+            <field name="arch" type="xml">
+                <tree string="Product Component" editable="bottom">
+                    <field name="product_template_id" optional="hide"/>
+                    <field name="product_id"/>
+                    <field name="component_id"/>
+                    <field name="partner_id"/>
+                    <field name="quantity"/>
+                    <field name="cost"/>
+                    <field name="note"/>
+                    <field name="sub_total"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="Product_component_action" model="ir.actions.act_window">
+            <field name="name">Product Component View</field>
+            <field name="res_model">bom</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="product_component_tree_view"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new Product Component
+                </p>
+            </field>
+        </record>
+
+        <menuitem
+                id="menu_product_component"
+                name="Product Component View"
+                parent="stock.menu_stock_inventory_control"
+                action="Product_component_action"
+        />
+
+
+        <!--                <record id="action_get_component" model="ir.actions.server">-->
+        <!--                <field name="name">Get Component</field>-->
+        <!--                <field name="model_id" ref="model_product_template"/>-->
+        <!--                <field name="binding_model_id" ref="model_product_template"/>-->
+        <!--                <field name="state">code</field>-->
+        <!--                <field name="sequence">1</field>-->
+        <!--                <field name="code">action = env.get('product.template').get_component()</field>-->
+        <!--                </record>-->
+
+
+        <!--                <record id="inherit_product_product_template_tree_view" model="ir.ui.view">-->
+        <!--            <field name="name">inherit.product.product.template.tree.view</field>-->
+        <!--            <field name="model">product.template</field>-->
+        <!--            <field name="inherit_id" ref="product.product_template_tree_view"/>-->
+        <!--            <field name="arch" type="xml">-->
+        <!--                <xpath expr="//field[@name='product_variant_count']" position="before">-->
+        <!--                    <header>-->
+        <!--                        <button name="get_component" string="Get Component" type="object" class="oe_highlight" />-->
+        <!--                    </header>-->
+        <!--                </xpath>-->
+        <!--            </field>-->
+        <!--        </record>-->
+
+    </data>
+</odoo>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_account_asset_form_inherit" model="ir.ui.view">
+            <field name="name">view_account_asset_form_inherit</field>
+            <field name="model">account.asset</field>
+            <field name="inherit_id" ref="account_asset.view_account_asset_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='acquisition_date']" position="after">
+                    <field name="product_tmpl_id" attrs="{'invisible': [('product_id', '!=', False)]}"/>
+                    <field name="product_id" attrs="{'invisible': [('product_tmpl_id', '!=', False)]}"/>
+                    <field name="product_qty"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
